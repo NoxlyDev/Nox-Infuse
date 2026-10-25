@@ -124,7 +124,7 @@ jobs:
           git tag "${{ needs.data_collector.outputs.full_version }}"
           git push origin "${{ needs.data_collector.outputs.full_version }}"
 
-  # Publishing to modrinth only (Maven publish removed)
+  # Build the final jar and upload it as a downloadable artifact
   publish:
     needs:
       - data_collector
@@ -149,26 +149,10 @@ jobs:
           sed -i "s/minecraftVersion=.*/minecraftVersion=1.21.11/" gradle.properties
       - name: Building Infuse
         run: ./gradlew build
-      - name: Publishing build to modrinth
-        uses: cloudnode-pro/modrinth-publish@v2
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.MODRINTH_TOKEN }}
-          project: x1wqx4cm
-          version: ${{ needs.data_collector.outputs.full_version }}
-          channel: ${{ needs.data_collector.outputs.channel }}
-          changelog: ${{ needs.data_collector.outputs.changelog }}
-          loaders: '["paper", "purpur"]'
-          game-versions: 1.21.11 - 26.2
-          dependencies: |-
-            [
-              {
-                "project_id": "DKY9btbd",
-                "dependency_type": "optional"
-              },
-              {
-                "project_id": "lKEzGugV",
-                "dependency_type": "optional"
-              }
-            ]
-          files: build/libs/InfuseSMP-${{ needs.data_collector.outputs.full_version }}.jar
-      - run: echo "Published InfuseSMP-${{ needs.data_collector.outputs.full_version }}.jar to modrinth" >> $GITHUB_STEP_SUMMARY
+          name: InfuseSMP-${{ needs.data_collector.outputs.full_version }}
+          path: build/libs/InfuseSMP-${{ needs.data_collector.outputs.full_version }}.jar
+          if-no-files-found: error
+      - run: echo "Built InfuseSMP-${{ needs.data_collector.outputs.full_version }}.jar (see Artifacts)" >> $GITHUB_STEP_SUMMARY
