@@ -34,9 +34,10 @@ jobs:
       - name: Finding previous version
         id: prev_version_finder
         run: |
-          PREV_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+          # Kalau belum ada tag sama sekali, hasilnya kosong (tidak error)
+          PREV_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || true)
           echo "result=$PREV_VERSION" >> $GITHUB_OUTPUT
-          echo "Previous Version: $PREV_VERSION  " >> $GITHUB_STEP_SUMMARY
+          echo "Previous Version: ${PREV_VERSION:-none (first release)}  " >> $GITHUB_STEP_SUMMARY
       - name: Finding the new version
         id: full_version_finder
         run: |
@@ -55,7 +56,12 @@ jobs:
       - name: Creating the changelog
         id: changelog
         run: |
-          CHANGELOG="$(git log --pretty=format:'%s  ' "${{ steps.prev_version_finder.outputs.result }}..")"
+          PREV="${{ steps.prev_version_finder.outputs.result }}"
+          if [ -n "$PREV" ]; then
+            CHANGELOG="$(git log --pretty=format:'%s  ' "$PREV..")"
+          else
+            CHANGELOG="$(git log --pretty=format:'%s  ')"
+          fi
           {
               echo 'result<<EOF'
               echo "$CHANGELOG"
