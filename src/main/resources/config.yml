@@ -307,5 +307,20 @@ thief:
     augmented: 150
   blacklisted_worlds: []
 
+#
+# Resource pack configs
+#
+resource_pack:
+  # If false, the resource pack is not sent to players on join.
+  enabled: true
+  # If true, players must accept the pack to play.
+  required: true
+  # NOTE: Change the UUID every time the pack is updated, otherwise clients may keep the old cached pack.
+  uuid: "7db10171-6baa-41d2-975c-0096db20379d"
+  # Direct download link to the pack zip.
+  url: "https://files.turbojax.org/packs/infuse/2.2/InfusePack-v2.2.zip"
+  # SHA-1 hash of the zip file (run `sha1sum pack.zip`).
+  sha1: "70bf54d44550f465dea514dac57f26707f0e6dcf"
+
 # Do not change this option, changing/deleting this option may lead to your configuration being wiped fresh.
 config_version: 1.0

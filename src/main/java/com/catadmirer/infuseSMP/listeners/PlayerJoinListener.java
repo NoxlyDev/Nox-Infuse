@@ -1,5 +1,6 @@
 package com.catadmirer.infuseSMP.listeners;
 
+import com.catadmirer.infuseSMP.MainConfig;
 import com.catadmirer.infuseSMP.Infuse;
 import com.catadmirer.infuseSMP.Message;
 import com.catadmirer.infuseSMP.Message.MessageType;
@@ -66,9 +67,15 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler
     public void giveResourcePack(PlayerJoinEvent event) {
+        MainConfig config = plugin.getMainConfig();
+        if (!config.resourcePackEnabled()) return;
+
+        var pack = config.getResourcePack();
+        if (pack == null) return;
+
         var request = ResourcePackRequest.resourcePackRequest()
-                .packs(Infuse.RESOURCE_PACK)
-                .required(true)
+                .packs(pack)
+                .required(config.resourcePackRequired())
                 .build();
 
         event.getPlayer().sendResourcePacks(request);

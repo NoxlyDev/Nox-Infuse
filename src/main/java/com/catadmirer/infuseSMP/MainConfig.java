@@ -2,6 +2,7 @@ package com.catadmirer.infuseSMP;
 
 import com.catadmirer.infuseSMP.effects.InfuseEffect;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.resource.ResourcePackInfo;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -23,6 +25,39 @@ public class MainConfig {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "config.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
+    }
+
+
+    // Defaults for the resource pack (used when the keys are missing from an older config)
+    private static final String DEFAULT_PACK_UUID = "7db10171-6baa-41d2-975c-0096db20379d";
+    private static final String DEFAULT_PACK_URL = "https://files.turbojax.org/packs/infuse/2.2/InfusePack-v2.2.zip";
+    private static final String DEFAULT_PACK_HASH = "70bf54d44550f465dea514dac57f26707f0e6dcf";
+
+    /** @return Whether the resource pack should be sent to players on join. */
+    public boolean resourcePackEnabled() {
+        return config.getBoolean("resource_pack.enabled", true);
+    }
+
+    /** @return Whether players are forced to accept the resource pack. */
+    public boolean resourcePackRequired() {
+        return config.getBoolean("resource_pack.required", true);
+    }
+
+    /**
+     * Builds the resource pack info from the config.
+     *
+     * @return The pack info, or null if the config values are invalid.
+     */
+    public ResourcePackInfo getResourcePack() {
+        try {
+            UUID id = UUID.fromString(config.getString("resource_pack.uuid", DEFAULT_PACK_UUID).trim());
+            URI uri = URI.create(config.getString("resource_pack.url", DEFAULT_PACK_URL).trim());
+            String hash = config.getString("resource_pack.sha1", DEFAULT_PACK_HASH).trim();
+            return ResourcePackInfo.resourcePackInfo(id, uri, hash);
+        } catch (IllegalArgumentException e) {
+            Infuse.LOGGER.warn("Invalid resource_pack settings in {} (check uuid/url/sha1).  The pack will not be sent.", file.getName());
+            return null;
+        }
     }
 
     /**
